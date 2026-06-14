@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoamKPK – Explore Khyber Pakhtunkhwa</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-dark: #9E7A2A;
+    --gold-light: #F0D98A;
+    --forest: #1A3C2E;
+    --forest-mid: #2E5E47;
+    --forest-light: #4A8C6A;
+    --cream: #F8F3E8;
+    --warm-white: #FFFDF7;
+    --text-dark: #1A1814;
+    --text-mid: #4A4540;
+    --text-muted: #8A8278;
+    --border: rgba(201,168,76,0.25);
+    --shadow: 0 8px 40px rgba(26,60,46,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  /* ── PAGE LOADER ── */
+  #page-loader {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--forest);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 1.5rem;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #page-loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .loader-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem; font-weight: 700;
+    color: var(--gold);
+    animation: loader-pulse 1.2s ease-in-out infinite;
+  }
+  .loader-logo span { color: #fff; }
+  .loader-bar {
+    width: 200px; height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px; overflow: hidden;
+  }
+  .loader-fill {
+    height: 100%; width: 0;
+    background: var(--gold);
+    border-radius: 2px;
+    animation: loader-fill 1.8s ease forwards;
+  }
+  @keyframes loader-fill { to { width: 100%; } }
+  @keyframes loader-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.97); }
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  .cursor-dot {
+    position: fixed; top: 0; left: 0;
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, width 0.3s, height 0.3s, opacity 0.3s;
+  }
+  .cursor-ring {
+    position: fixed; top: 0; left: 0;
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(201,168,76,0.6);
+    border-radius: 50%;
+    pointer-events: none; z-index: 9997;
+    transform: translate(-50%, -50%);
+    transition: transform 0.12s ease, width 0.3s, height 0.3s, border-color 0.3s;
+  }
+  .cursor-dot.hover { width: 12px; height: 12px; background: var(--gold-light); }
+  .cursor-ring.hover { width: 56px; height: 56px; border-color: var(--gold); }
+  @media (pointer: coarse) { .cursor-dot, .cursor-ring { display: none; } }
+
+  /* ── RIPPLE ── */
+  .ripple-el { position: relative; overflow: hidden; }
+  .ripple-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.35);
+    transform: scale(0);
+    animation: ripple-anim 0.6s linear;
+    pointer-events: none;
+  }
+  @keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+
+  /* ── SECTION REVEAL ── */
+  .reveal-left {
+    opacity: 0; transform: translateX(-50px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal-right {
+    opacity: 0; transform: translateX(50px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal-scale {
+    opacity: 0; transform: scale(0.9);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal-left.visible, .reveal-right.visible, .reveal-scale.visible {
+    opacity: 1; transform: none;
+  }
+
+  /* ── TYPEWRITER ── */
+  .typewriter { border-right: 3px solid var(--gold); white-space: nowrap; overflow: hidden; display: inline-block; }
+
+  /* ── NUMBER COUNTER ── */
+  .count-num { display: inline-block; }
+
+  /* ── PARALLAX ── */
+  .parallax-layer { will-change: transform; }
+
+  /* ── GLOWING CARD ── */
+  .glow-card {
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
+  }
+  .glow-card:hover {
+    box-shadow: 0 0 30px rgba(201,168,76,0.25), 0 20px 50px rgba(0,0,0,0.15);
+  }
+
+  /* ── SHIMMER on badges ── */
+  .shimmer {
+    position: relative; overflow: hidden;
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute; top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    animation: shimmer-move 2.5s ease infinite;
+  }
+  @keyframes shimmer-move { to { left: 160%; } }
+
+  /* ── TOUR CARD TILT ── */
+  .tilt-card { transform-style: preserve-3d; transition: transform 0.1s ease; }
+
+  /* ── SECTION TRANSITION LINE ── */
+  .section-divider {
+    width: 60px; height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    margin: 1.2rem 0 2rem;
+    transition: width 0.5s ease;
+  }
+  .section-divider.expanded { width: 120px; }
+
+  /* ── HERO TEXT ANIMATION ── */
+  .hero-title .word {
+    display: inline-block;
+    opacity: 0; transform: translateY(40px);
+    animation: word-rise 0.6s ease forwards;
+  }
+  @keyframes word-rise { to { opacity: 1; transform: translateY(0); } }
+
+  /* ── SCROLL PROGRESS BAR ── */
+  #scroll-progress {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 3px; z-index: 1001;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.1s linear;
+  }
+
+  /* ── BACK TO TOP ── */
+  #back-top {
+    position: fixed; bottom: 5.5rem; right: 2rem; z-index: 999;
+    width: 42px; height: 42px;
+    background: var(--forest);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; color: var(--gold);
+    cursor: pointer;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s, background 0.3s;
+  }
+  #back-top.show { opacity: 1; transform: translateY(0); }
+  #back-top:hover { background: var(--gold); color: var(--forest); }
+
+  /* ── HERO PARTICLES ── */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.15);
+    animation: particle-float linear infinite;
+    pointer-events: none;
+  }
+  @keyframes particle-float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--warm-white);
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 5%;
+    background: rgba(26,60,46,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    transition: all 0.3s ease;
+  }
+  nav.scrolled { padding: 0.7rem 5%; background: rgba(10,30,20,0.98); }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+    text-decoration: none;
+  }
+  .nav-logo span { color: #fff; }
+
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+    height: 1px; background: var(--gold); transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  .nav-cta {
+    background: var(--gold);
+    color: var(--forest) !important;
+    padding: 0.5rem 1.3rem;
+    border-radius: 2px;
+    font-weight: 600 !important;
+  }
+  .nav-cta::after { display: none !important; }
+  .nav-cta:hover { background: var(--gold-light) !important; color: var(--forest) !important; }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+  .hamburger span { width: 25px; height: 2px; background: #fff; transition: all 0.3s; display: block; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    background: linear-gradient(160deg, var(--forest) 0%, #0D2418 50%, #1A2E1A 100%);
+    display: flex; align-items: center;
+    position: relative; overflow: hidden;
+    padding-top: 80px;
+  }
+
+  .hero-bg-pattern {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 70% 50%, rgba(201,168,76,0.08) 0%, transparent 70%),
+      radial-gradient(circle at 20% 80%, rgba(74,140,106,0.15) 0%, transparent 50%);
+  }
+
+  .hero-grid {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image: linear-gradient(rgba(201,168,76,0.5) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(201,168,76,0.5) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 1200px; margin: 0 auto; padding: 0 5%;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold-light);
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .hero-badge::before { content: '◆'; font-size: 0.6rem; }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 5vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 1.5rem;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--gold);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--forest);
+    padding: 0.9rem 2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none; cursor: pointer;
+    border-radius: 2px;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.3s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.4); }
+
+  .btn-outline {
+    background: transparent;
+    color: #fff;
+    padding: 0.9rem 2rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    border-radius: 2px;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.3s;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+
+  .hero-stats {
+    display: flex; gap: 2.5rem; margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700;
+    color: var(--gold);
+  }
+  .stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  .hero-visual {
+    position: relative;
+  }
+
+  .hero-card-main {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .hero-map-placeholder {
+    width: 100%; height: 320px;
+    background: linear-gradient(135deg, #1A3C2E 0%, #0D2418 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+
+  .map-dots { position: absolute; inset: 0; }
+  .map-dot {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(201,168,76,0.2), 0 0 0 8px rgba(201,168,76,0.1);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .map-dot:nth-child(1) { top: 30%; left: 40%; animation-delay: 0s; }
+  .map-dot:nth-child(2) { top: 55%; left: 60%; animation-delay: 0.4s; }
+  .map-dot:nth-child(3) { top: 70%; left: 30%; animation-delay: 0.8s; }
+  .map-dot:nth-child(4) { top: 20%; left: 65%; animation-delay: 1.2s; }
+  .map-dot:nth-child(5) { top: 45%; left: 20%; animation-delay: 1.6s; }
+
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(201,168,76,0.2), 0 0 0 8px rgba(201,168,76,0.1); }
+    50% { box-shadow: 0 0 0 8px rgba(201,168,76,0.3), 0 0 0 16px rgba(201,168,76,0.1); }
+  }
+
+  .map-label {
+    position: absolute;
+    color: rgba(201,168,76,0.9);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(26,60,46,0.9);
+    padding: 3px 8px;
+    border-radius: 2px;
+    border: 1px solid rgba(201,168,76,0.3);
+    white-space: nowrap;
+  }
+  .map-label-1 { top: 23%; left: 42%; transform: translate(-50%, -100%) translateY(-8px); }
+  .map-label-2 { top: 48%; left: 62%; transform: translate(-50%, -100%) translateY(-8px); }
+  .map-label-3 { top: 73%; left: 32%; transform: translate(-50%, -100%) translateY(-8px); }
+
+  .map-center-text {
+    text-align: center; z-index: 1;
+  }
+  .map-center-text svg { opacity: 0.3; margin-bottom: 1rem; }
+  .map-center-text p { color: rgba(255,255,255,0.3); font-size: 0.85rem; }
+
+  .hero-card-info {
+    padding: 1.2rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid rgba(201,168,76,0.15);
+  }
+  .info-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
+  .info-value { font-size: 0.9rem; color: #fff; font-weight: 500; margin-top: 2px; }
+
+  .floating-tag {
+    position: absolute;
+    background: var(--gold);
+    color: var(--forest);
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    animation: float 3s ease-in-out infinite;
+  }
+  .floating-tag-1 { top: -15px; right: 20px; animation-delay: 0s; }
+  .floating-tag-2 { bottom: 80px; right: -15px; animation-delay: 1.5s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* ── SECTIONS COMMON ── */
+  section { padding: 6rem 5%; }
+
+  .section-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--forest-mid);
+    margin-bottom: 1rem;
+  }
+  .section-tag::before { content: ''; width: 24px; height: 1px; background: var(--gold); display: block; }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+  }
+  .section-title span { color: var(--forest); }
+
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    max-width: 560px;
+    font-weight: 300;
+  }
+
+  /* ── ABOUT ── */
+  #about {
+    background: var(--cream);
+    position: relative; overflow: hidden;
+  }
+  #about::before {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 40%; height: 100%;
+    background: linear-gradient(to left, rgba(201,168,76,0.05), transparent);
+  }
+
+  .about-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+  }
+
+  .about-image-block { position: relative; }
+
+  .about-img-main {
+    width: 100%; height: 420px;
+    background: linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 50%, #2A5540 100%);
+    border-radius: 4px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .about-img-pattern {
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent, transparent 20px,
+      rgba(201,168,76,0.05) 20px, rgba(201,168,76,0.05) 40px
+    );
+  }
+
+  .about-img-text {
+    position: relative; z-index: 1; text-align: center; padding: 2rem;
+  }
+  .about-img-text .big-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem; font-weight: 900;
+    color: rgba(201,168,76,0.3);
+    line-height: 1;
+  }
+  .about-img-text p { color: rgba(255,255,255,0.6); font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 0.5rem; }
+
+  .about-badge-float {
+    position: absolute;
+    bottom: -20px; right: -20px;
+    background: var(--forest);
+    color: #fff;
+    padding: 1.2rem 1.5rem;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+  .about-badge-float .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700; color: var(--gold);
+    display: block;
+  }
+  .about-badge-float p { font-size: 0.75rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+  .about-features { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+  .feature-item {
+    display: flex; gap: 1rem; align-items: flex-start;
+    padding: 1.2rem;
+    background: #fff;
+    border-radius: 4px;
+    border-left: 3px solid var(--gold);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .feature-item:hover { transform: translateX(4px); box-shadow: 4px 4px 20px rgba(0,0,0,0.08); }
+  .feature-icon {
+    width: 40px; height: 40px; min-width: 40px;
+    background: rgba(26,60,46,0.08);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  .feature-item h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; color: var(--text-dark); }
+  .feature-item p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* ── TOURS ── */
+  #tours { background: var(--warm-white); }
+
+  .tours-header {
+    max-width: 1200px; margin: 0 auto 3.5rem;
+    display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;
+  }
+
+  .tour-filters {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-mid);
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--forest);
+    border-color: var(--forest);
+    color: #fff;
+  }
+
+  .tours-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.8rem;
+  }
+
+  .tour-card {
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.07);
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+  .tour-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.12); }
+
+  .tour-img {
+    height: 220px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tour-img-bg {
+    position: absolute; inset: 0;
+    transition: transform 0.5s ease;
+  }
+  .tour-card:hover .tour-img-bg { transform: scale(1.05); }
+
+  .tour-img-1 .tour-img-bg { background: linear-gradient(135deg, #2E5E47 0%, #1A3C2E 100%); }
+  .tour-img-2 .tour-img-bg { background: linear-gradient(135deg, #3A5A70 0%, #1A2E40 100%); }
+  .tour-img-3 .tour-img-bg { background: linear-gradient(135deg, #5E3A2E 0%, #3A1A1A 100%); }
+  .tour-img-4 .tour-img-bg { background: linear-gradient(135deg, #3A4A2E 0%, #1A2E1A 100%); }
+  .tour-img-5 .tour-img-bg { background: linear-gradient(135deg, #4A3A5E 0%, #2E1A3C 100%); }
+  .tour-img-6 .tour-img-bg { background: linear-gradient(135deg, #5E4A2E 0%, #3C2A1A 100%); }
+
+  .tour-img-icon {
+    font-size: 3.5rem;
+    position: relative; z-index: 1;
+    opacity: 0.4;
+  }
+
+  .tour-badge {
+    position: absolute; top: 12px; left: 12px;
+    background: var(--gold);
+    color: var(--forest);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 2;
+  }
+
+  .tour-duration {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 2px;
+    z-index: 2;
+    backdrop-filter: blur(4px);
+  }
+
+  .tour-body { padding: 1.4rem; }
+  .tour-body h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 600;
+    color: var(--text-dark); margin-bottom: 0.4rem;
+  }
+  .tour-body p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+
+  .tour-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .tour-info { display: flex; gap: 1rem; }
+  .tour-info-item { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--text-muted); }
+
+  .tour-price { text-align: right; }
+  .tour-price .from { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .tour-price .amount { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--forest); }
+  .tour-price .currency { font-size: 0.75rem; font-weight: 500; }
+
+  /* ── DESTINATIONS ── */
+  #destinations {
+    background: var(--forest);
+    color: #fff;
+    position: relative; overflow: hidden;
+  }
+
+  .dest-bg {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(ellipse at 80% 50%, rgba(201,168,76,0.08), transparent 60%);
+  }
+
+  .dest-header {
+    max-width: 1200px; margin: 0 auto 3.5rem;
+    display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;
+    position: relative; z-index: 1;
+  }
+  .dest-header .section-title { color: #fff; }
+  .dest-header .section-tag { color: var(--gold-light); }
+  .dest-header .section-desc { color: rgba(255,255,255,0.6); }
+
+  .dest-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.2rem;
+    position: relative; z-index: 1;
+  }
+
+  .dest-card {
+    border-radius: 4px; overflow: hidden;
+    position: relative; cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .dest-card:hover { transform: scale(1.02); }
+  .dest-card:hover .dest-overlay { opacity: 1; }
+
+  .dest-card-large { grid-row: 1 / 3; min-height: 400px; }
+  .dest-card-sm { min-height: 185px; }
+
+  .dest-img {
+    width: 100%; height: 100%; min-height: 185px;
+    display: flex; align-items: flex-end;
+    position: relative;
+  }
+
+  .dest-1 { background: linear-gradient(160deg, #1A4A30 0%, #0D2E1A 100%); }
+  .dest-2 { background: linear-gradient(160deg, #2E3A5E 0%, #1A2040 100%); }
+  .dest-3 { background: linear-gradient(160deg, #5E3020 0%, #3A1810 100%); }
+  .dest-4 { background: linear-gradient(160deg, #3A5030 0%, #1A3010 100%); }
+  .dest-5 { background: linear-gradient(160deg, #4A3050 0%, #2A1030 100%); }
+
+  .dest-decor {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 4rem; opacity: 0.15;
+  }
+
+  .dest-info {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 1.5rem 1.2rem 1.2rem;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  }
+  .dest-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; color: #fff; font-weight: 600; margin-bottom: 0.2rem;
+  }
+  .dest-info p { font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+
+  .dest-overlay {
+    position: absolute; inset: 0;
+    background: rgba(201,168,76,0.15);
+    border: 2px solid rgba(201,168,76,0.5);
+    border-radius: 4px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+
+  /* ── GALLERY ── */
+  #gallery {
+    background: var(--cream);
+    overflow: hidden;
+  }
+  .gallery-header { max-width: 1200px; margin: 0 auto 3rem; }
+
+  .gallery-strip {
+    display: flex; gap: 1rem;
+    animation: scroll-gallery 30s linear infinite;
+    width: max-content;
+  }
+  .gallery-wrapper { overflow: hidden; position: relative; }
+  .gallery-wrapper::before, .gallery-wrapper::after {
+    content: '';
+    position: absolute; top: 0; bottom: 0; width: 100px; z-index: 2;
+  }
+  .gallery-wrapper::before { left: 0; background: linear-gradient(to right, var(--cream), transparent); }
+  .gallery-wrapper::after { right: 0; background: linear-gradient(to left, var(--cream), transparent); }
+
+  @keyframes scroll-gallery {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .gallery-item {
+    width: 250px; height: 200px; min-width: 250px;
+    border-radius: 4px; overflow: hidden;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s;
+  }
+  .gallery-item:hover { transform: scale(1.03); }
+
+  .g1 { background: linear-gradient(135deg, #1A3C2E, #2E6040); }
+  .g2 { background: linear-gradient(135deg, #2E3A5E, #1A2040); }
+  .g3 { background: linear-gradient(135deg, #5E3020, #3A1A0A); }
+  .g4 { background: linear-gradient(135deg, #3A5030, #1A3010); }
+  .g5 { background: linear-gradient(135deg, #4A3050, #2A1030); }
+  .g6 { background: linear-gradient(135deg, #505020, #303010); }
+  .g7 { background: linear-gradient(135deg, #203040, #101820); }
+  .g8 { background: linear-gradient(135deg, #402030, #201020); }
+
+  .gallery-item-text {
+    text-align: center; color: rgba(255,255,255,0.5); font-size: 0.8rem;
+    position: relative; z-index: 1;
+  }
+  .gallery-item-text .icon { font-size: 2.5rem; display: block; opacity: 0.4; margin-bottom: 6px; }
+  .gallery-item-label {
+    position: absolute; bottom: 10px; left: 10px;
+    background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.8);
+    font-size: 0.7rem; padding: 3px 8px; border-radius: 2px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── WHY US ── */
+  #why {
+    background: var(--warm-white);
+  }
+  .why-grid {
+    max-width: 1200px; margin: 3rem auto 0;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem;
+  }
+  .why-card {
+    padding: 2rem;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 4px;
+    background: #fff;
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .why-card::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: var(--gold);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .why-card:hover::before { transform: scaleX(1); }
+  .why-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+
+  .why-icon {
+    font-size: 2rem; margin-bottom: 1rem;
+    width: 56px; height: 56px;
+    background: rgba(26,60,46,0.08);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .why-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 600;
+    margin-bottom: 0.6rem; color: var(--text-dark);
+  }
+  .why-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* ── TESTIMONIALS ── */
+  #testimonials {
+    background: var(--forest);
+    color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .test-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 80%, rgba(201,168,76,0.06), transparent 50%); }
+
+  .test-header { max-width: 1200px; margin: 0 auto 3.5rem; position: relative; z-index: 1; }
+  .test-header .section-title { color: #fff; }
+  .test-header .section-tag { color: var(--gold-light); }
+
+  .test-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
+    position: relative; z-index: 1;
+  }
+
+  .test-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 4px;
+    padding: 1.8rem;
+    transition: background 0.3s;
+  }
+  .test-card:hover { background: rgba(255,255,255,0.08); }
+
+  .test-stars { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 1rem; }
+  .test-quote {
+    font-size: 0.95rem; line-height: 1.8;
+    color: rgba(255,255,255,0.75); font-weight: 300;
+    font-style: italic; margin-bottom: 1.5rem;
+  }
+  .test-author { display: flex; align-items: center; gap: 12px; }
+  .test-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(201,168,76,0.2);
+    border: 1px solid rgba(201,168,76,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; color: var(--gold); font-weight: 700;
+  }
+  .test-name { font-weight: 600; font-size: 0.9rem; color: #fff; }
+  .test-loc { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+  /* ── CONTACT ── */
+  #contact {
+    background: var(--cream);
+  }
+  .contact-grid {
+    max-width: 1200px; margin: 3rem auto 0;
+    display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; align-items: start;
+  }
+
+  .contact-info-cards { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 2rem; }
+  .contact-info-card {
+    display: flex; gap: 1rem; align-items: center;
+    padding: 1rem 1.2rem;
+    background: #fff;
+    border-radius: 4px;
+    border-left: 3px solid var(--gold);
+  }
+  .ci-icon {
+    font-size: 1.3rem;
+    width: 44px; height: 44px; min-width: 44px;
+    background: rgba(26,60,46,0.07);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ci-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .ci-value { font-size: 0.92rem; font-weight: 500; color: var(--text-dark); }
+
+  .contact-form {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+  }
+  .contact-form h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; margin-bottom: 1.5rem; color: var(--text-dark);
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label {
+    display: block; font-size: 0.8rem; font-weight: 600;
+    color: var(--text-mid); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem;
+    color: var(--text-dark);
+    background: var(--warm-white);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+  }
+  .form-group textarea { resize: vertical; min-height: 110px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0D1C12;
+    color: rgba(255,255,255,0.6);
+    padding: 4rem 5% 2rem;
+  }
+  .footer-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-brand .nav-logo { font-size: 1.5rem; display: block; margin-bottom: 1rem; }
+  .footer-brand p { font-size: 0.88rem; line-height: 1.8; max-width: 280px; }
+  .footer-social { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .social-btn {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .social-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .footer-col h4 {
+    font-size: 0.8rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--gold); margin-bottom: 1.2rem;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 0.6rem; }
+  .footer-col ul li a {
+    color: rgba(255,255,255,0.5);
+    text-decoration: none; font-size: 0.88rem;
+    transition: color 0.3s;
+  }
+  .footer-col ul li a:hover { color: var(--gold-light); }
+
+  .footer-bottom {
+    max-width: 1200px; margin: 2rem auto 0;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+    font-size: 0.82rem;
+  }
+  .footer-bottom a { color: var(--gold); text-decoration: none; }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── WHATSAPP FLOAT ── */
+  .wa-float {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+    width: 56px; height: 56px;
+    background: #25D366;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    text-decoration: none;
+    color: #fff;
+    animation: wa-pulse 2.5s ease-in-out infinite;
+    transition: transform 0.3s;
+  }
+  .wa-float:hover { transform: scale(1.1); }
+  @keyframes wa-pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4); }
+    50% { box-shadow: 0 4px 30px rgba(37,211,102,0.7), 0 0 0 10px rgba(37,211,102,0.1); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero-content { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .dest-grid { grid-template-columns: 1fr 1fr; }
+    .dest-card-large { grid-row: auto; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    section { padding: 4rem 5%; }
+    .nav-links { display: none; }
+    .nav-links.open {
+      display: flex; flex-direction: column;
+      position: fixed; top: 70px; left: 0; right: 0;
+      background: rgba(10,30,20,0.98);
+      padding: 2rem;
+      gap: 1.5rem;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+    .hamburger { display: flex; }
+    .hero-stats { flex-wrap: wrap; gap: 1.5rem; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .dest-grid { grid-template-columns: 1fr; }
+    .tours-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div id="scroll-progress" style="position:fixed;top:0;left:0;right:0;height:3px;z-index:1001;background:linear-gradient(90deg,var(--gold),var(--gold-light));transform-origin:left;transform:scaleX(0);transition:transform 0.1s linear;"></div>
+
+<!-- PAGE LOADER -->
+<div id="page-loader" style="position:fixed;inset:0;z-index:9999;background:var(--forest);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;transition:opacity 0.7s ease,visibility 0.7s ease;">
+  <div style="font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;color:var(--gold);animation:loader-pulse 1.2s ease-in-out infinite;">Roam<span style="color:#fff;">KPK</span></div>
+  <div style="width:200px;height:2px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;">
+    <div id="loader-fill" style="height:100%;width:0;background:var(--gold);border-radius:2px;transition:width 1.6s ease;"></div>
+  </div>
+  <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;">Preparing your adventure...</div>
+</div>
+
+<!-- CUSTOM CURSOR (desktop only) -->
+<div id="cursorDot" style="position:fixed;top:0;left:0;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s;"></div>
+<div id="cursorRing" style="position:fixed;top:0;left:0;width:36px;height:36px;border:1.5px solid rgba(201,168,76,0.6);border-radius:50%;pointer-events:none;z-index:9997;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s,border-color 0.3s;"></div>
+
+<!-- BACK TO TOP -->
+<div id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:5.5rem;right:2rem;z-index:999;width:42px;height:42px;background:var(--forest);border:1px solid rgba(201,168,76,0.4);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--gold);cursor:pointer;opacity:0;transform:translateY(10px);transition:opacity 0.3s,transform 0.3s,background 0.3s;">&#8593;</div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Roam<span>KPK</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about">About</a></li>
+    <li><a href="#tours">Tours</a></li>
+    <li><a href="#destinations">Destinations</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#contact" class="nav-cta">Book Now</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-left">
+      <div class="hero-badge shimmer">Khyber Pakhtunkhwa, Pakistan</div>
+      <h1 class="hero-title">
+        Discover the Soul of
+        <em>Untamed KPK</em>
+      </h1>
+      <p class="hero-desc">
+        From the ancient streets of Dera Ismail Khan to the majestic Indus riverbanks — we craft journeys that reveal the hidden beauty, rich culture, and timeless heritage of Khyber Pakhtunkhwa.
+      </p>
+      <div class="hero-btns">
+        <a href="#tours" class="btn-primary">Explore Tours &#8594;</a>
+        <a href="#destinations" class="btn-outline">&#9654; View Destinations</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num count-num" data-target="40">0</div>
+          <div class="stat-label">Destinations</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num count-num" data-target="500">0</div>
+          <div class="stat-label">Happy Travelers</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num count-num" data-target="8">0</div>
+          <div class="stat-label">Years Experience</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-card-main">
+        <div class="hero-map-placeholder">
+          <div class="map-dots">
+            <div class="map-dot"></div>
+            <div class="map-dot"></div>
+            <div class="map-dot"></div>
+            <div class="map-dot"></div>
+            <div class="map-dot"></div>
+          </div>
+          <div class="map-label map-label-1">D.I. Khan</div>
+          <div class="map-label map-label-2">Peshawar</div>
+          <div class="map-label map-label-3">Swat Valley</div>
+          <div class="map-center-text">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+              <circle cx="30" cy="30" r="28" stroke="#C9A84C" stroke-width="1"/>
+              <path d="M30 10 L30 50 M10 30 L50 30" stroke="#C9A84C" stroke-width="1" opacity="0.5"/>
+              <circle cx="30" cy="30" r="4" fill="#C9A84C"/>
+            </svg>
+            <p>Interactive Map Coming Soon</p>
+          </div>
+        </div>
+        <div class="hero-card-info">
+          <div>
+            <div class="info-label">Base Location</div>
+            <div class="info-value">Dera Ismail Khan, KPK</div>
+          </div>
+          <div>
+            <div class="info-label">Coverage</div>
+            <div class="info-value">All of KPK & Beyond</div>
+          </div>
+        </div>
+      </div>
+      <div class="floating-tag floating-tag-1">✦ Best Value</div>
+      <div class="floating-tag floating-tag-2">🏔 Adventure Awaits</div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-image-block fade-up reveal-left">
+      <div class="about-img-main">
+        <div class="about-img-pattern"></div>
+        <div class="about-img-text">
+          <div class="big-num">KPK</div>
+          <p>Land of Eagles</p>
+        </div>
+      </div>
+      <div class="about-badge-float">
+        <span class="num">98%</span>
+        <p>Client Satisfaction</p>
+      </div>
+    </div>
+    <div class="fade-up reveal-right">
+      <div class="section-tag">Our Story</div>
+      <h2 class="section-title">Born in DI Khan, <span>Built for Explorers</span></h2>
+      <p class="section-desc">We are a local travel company deeply rooted in Dera Ismail Khan. Our team of passionate guides and travel experts know every hidden trail, every historic shrine, and every scenic viewpoint in KPK — because this is our home.</p>
+      <div class="about-features">
+        <div class="feature-item">
+          <div class="feature-icon">🗺️</div>
+          <div>
+            <h4>Local Expert Guides</h4>
+            <p>Born and raised in KPK — our guides speak the language, know the culture, and will make you feel like a local.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <div>
+            <h4>Safe & Reliable Travel</h4>
+            <p>Your safety is our top priority. All tours are planned with vetted routes, secure transport, and 24/7 support.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">💰</div>
+          <div>
+            <h4>Affordable Packages</h4>
+            <p>Premium experiences at prices that respect your budget. No hidden fees, no surprises.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOURS -->
+<section id="tours">
+  <div class="tours-header">
+    <div>
+      <div class="section-tag">Tour Packages</div>
+      <h2 class="section-title">Curated <span>KPK Experiences</span></h2>
+      <p class="section-desc">Hand-crafted itineraries for every type of traveler — history lovers, adventure seekers, and family explorers.</p>
+    </div>
+    <div class="tour-filters">
+      <button class="filter-btn active" onclick="filterTours(this, 'all')">All Tours</button>
+      <button class="filter-btn" onclick="filterTours(this, 'adventure')">Adventure</button>
+      <button class="filter-btn" onclick="filterTours(this, 'cultural')">Cultural</button>
+      <button class="filter-btn" onclick="filterTours(this, 'nature')">Nature</button>
+    </div>
+  </div>
+
+  <div class="tours-grid" id="toursGrid">
+    <div class="tour-card fade-up glow-card tilt-card" data-cat="cultural">
+      <div class="tour-img tour-img-1">
+        <div class="tour-img-bg"></div>
+        <div class="tour-img-icon">🕌</div>
+        <span class="tour-badge shimmer">Popular</span>
+        <span class="tour-duration">⏱ 2 Days</span>
+      </div>
+      <div class="tour-body">
+        <h3>Dera Ismail Khan Heritage Trail</h3>
+        <p>Explore the ancient forts, Mughal-era mosques, and the vibrant bazaars of our beloved hometown.</p>
+        <div class="tour-meta">
+          <div class="tour-info">
+            <div class="tour-info-item">👥 2–10</div>
+            <div class="tour-info-item">🏨 Hotel</div>
+          </div>
+          <div class="tour-price">
+            <div class="from">From</div>
+            <div class="amount"><span class="currency">Rs </span>8,500</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tour-card fade-up glow-card tilt-card" data-cat="nature">
+      <div class="tour-img tour-img-2">
+        <div class="tour-img-bg"></div>
+        <div class="tour-img-icon">🏔️</div>
+        <span class="tour-badge shimmer">Trending</span>
+        <span class="tour-duration">⏱ 5 Days</span>
+      </div>
+      <div class="tour-body">
+        <h3>Swat Valley & Mahodand Lake</h3>
+        <p>Journey through the "Switzerland of Pakistan" — lush valleys, turquoise lakes, and crystal waterfalls.</p>
+        <div class="tour-meta">
+          <div class="tour-info">
+            <div class="tour-info-item">👥 4–12</div>
+            <div class="tour-info-item">⛺ Camp</div>
+          </div>
+          <div class="tour-price">
+            <div class="from">From</div>
+            <div class="amount"><span class="currency">Rs </span>22,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tour-card fade-up glow-card tilt-card" data-cat="adventure">
+      <div class="tour-img tour-img-3">
+        <div class="tour-img-bg"></div>
+        <div class="tour-img-icon">🦅</div>
+        <span class="tour-badge shimmer">Adventure</span>
+        <span class="tour-duration">⏱ 4 Days</span>
+      </div>
+      <div class="tour-body">
+        <h3>Chitral & Kalash Valley Trek</h3>
+        <p>Immerse in the ancient Kalash culture, colorful festivals, and the rugged beauty of Hindu Kush mountains.</p>
+        <div class="tour-meta">
+          <div class="tour-info">
+            <div class="tour-info-item">👥 2–8</div>
+            <div class="tour-info-item">🏕️ Lodge</div>
+          </div>
+          <div class="tour-price">
+            <div class="from">From</div>
+            <div class="amount"><span class="currency">Rs </span>18,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tour-card fade-up glow-card tilt-card" data-cat="nature">
+      <div class="tour-img tour-img-4">
+        <div class="tour-img-bg"></div>
+        <div class="tour-img-icon">🌊</div>
+        <span class="tour-duration">⏱ 3 Days</span>
+      </div>
+      <div class="tour-body">
+        <h3>Indus River Expedition</h3>
+        <p>Follow the mighty Indus from DI Khan northward — riverside camping, fishing, and breathtaking sunsets.</p>
+        <div class="tour-meta">
+          <div class="tour-info">
+            <div class="tour-info-item">👥 4–15</div>
+            <div class="tour-info-item">⛺ Camp</div>
+          </div>
+          <div class="tour-price">
+            <div class="from">From</div>
+            <div class="amount"><span class="currency">Rs </span>12,500</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tour-card fade-up glow-card tilt-card" data-cat="cultural">
+      <div class="tour-img tour-img-5">
+        <div class="tour-img-bg"></div>
+        <div class="tour-img-icon">🏛️</div>
+        <span class="tour-duration">⏱ 3 Days</span>
+      </div>
+      <div class="tour-body">
+        <h3>Peshawar Old City & Khyber Pass</h3>
+        <p>Walk through 2,500 years of history — the Grand Trunk Road, Qissa Khwani Bazaar, and the Khyber Pass.</p>
+        <div class="tour-meta">
+          <div class="tour-info">
+            <div class="tour-info-item">👥 2–12</div>
+            <div class="tour-info-item">🏨 Hotel</div>
+          </div>
+          <div class="tour-price">
+            <div class="from">From</div>
+            <div class="amount"><span class="currency">Rs </span>14,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tour-card fade-up glow-card tilt-card" data-cat="adventure">
+      <div class="tour-img tour-img-6">
+        <div class="tour-img-bg"></div>
+        <div class="tour-img-icon">🏕️</div>
+        <span class="tour-badge shimmer">New</span>
+        <span class="tour-duration">⏱ 7 Days</span>
+      </div>
+      <div class="tour-body">
+        <h3>Dir & Kumrat Valley Wilderness</h3>
+        <p>Deep forest trekking, untouched meadows, and sky-high passes in one of Pakistan's last true wildernesses.</p>
+        <div class="tour-meta">
+          <div class="tour-info">
+            <div class="tour-info-item">👥 2–8</div>
+            <div class="tour-info-item">⛺ Camp</div>
+          </div>
+          <div class="tour-price">
+            <div class="from">From</div>
+            <div class="amount"><span class="currency">Rs </span>28,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DESTINATIONS -->
+<section id="destinations">
+  <div class="dest-bg"></div>
+  <div class="dest-header">
+    <div>
+      <div class="section-tag">Top Destinations</div>
+      <h2 class="section-title">Places That Will <br>Take Your Breath Away</h2>
+    </div>
+    <a href="#contact" class="btn-primary">View All &#8594;</a>
+  </div>
+  <div class="dest-grid fade-up">
+    <div class="dest-card dest-card-large">
+      <div class="dest-img dest-1">
+        <div class="dest-decor">🏔️</div>
+        <div class="dest-info">
+          <h3>Swat Valley</h3>
+          <p>12 attractions · 5-day recommended</p>
+        </div>
+      </div>
+      <div class="dest-overlay"></div>
+    </div>
+    <div class="dest-card dest-card-sm">
+      <div class="dest-img dest-2">
+        <div class="dest-decor">🕌</div>
+        <div class="dest-info">
+          <h3>Peshawar</h3>
+          <p>Historical city · 3 days</p>
+        </div>
+      </div>
+      <div class="dest-overlay"></div>
+    </div>
+    <div class="dest-card dest-card-sm">
+      <div class="dest-img dest-3">
+        <div class="dest-decor">🦅</div>
+        <div class="dest-info">
+          <h3>Chitral</h3>
+          <p>Kalash culture · 4 days</p>
+        </div>
+      </div>
+      <div class="dest-overlay"></div>
+    </div>
+    <div class="dest-card dest-card-sm">
+      <div class="dest-img dest-4">
+        <div class="dest-decor">🌲</div>
+        <div class="dest-info">
+          <h3>Kumrat Valley</h3>
+          <p>Dense forest · 7 days</p>
+        </div>
+      </div>
+      <div class="dest-overlay"></div>
+    </div>
+    <div class="dest-card dest-card-sm">
+      <div class="dest-img dest-5">
+        <div class="dest-decor">🌊</div>
+        <div class="dest-info">
+          <h3>Indus Belt</h3>
+          <p>River expedition · 3 days</p>
+        </div>
+      </div>
+      <div class="dest-overlay"></div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="gallery-header fade-up">
+    <div class="section-tag">Photo Gallery</div>
+    <h2 class="section-title">Moments from <span>Our Journeys</span></h2>
+  </div>
+  <div class="gallery-wrapper">
+    <div class="gallery-strip">
+      <div class="gallery-item g1"><div class="gallery-item-text"><span class="icon">🕌</span></div><div class="gallery-item-label">DI Khan Fort</div></div>
+      <div class="gallery-item g2"><div class="gallery-item-text"><span class="icon">🏔️</span></div><div class="gallery-item-label">Swat Mountains</div></div>
+      <div class="gallery-item g3"><div class="gallery-item-text"><span class="icon">🌅</span></div><div class="gallery-item-label">Indus Sunset</div></div>
+      <div class="gallery-item g4"><div class="gallery-item-text"><span class="icon">🌿</span></div><div class="gallery-item-label">Kumrat Forest</div></div>
+      <div class="gallery-item g5"><div class="gallery-item-text"><span class="icon">🦅</span></div><div class="gallery-item-label">Chitral Peak</div></div>
+      <div class="gallery-item g6"><div class="gallery-item-text"><span class="icon">🏛️</span></div><div class="gallery-item-label">Peshawar Bazaar</div></div>
+      <div class="gallery-item g7"><div class="gallery-item-text"><span class="icon">💧</span></div><div class="gallery-item-label">Mahodand Lake</div></div>
+      <div class="gallery-item g8"><div class="gallery-item-text"><span class="icon">🌄</span></div><div class="gallery-item-label">Hindu Kush Dawn</div></div>
+      <!-- Duplicate for seamless loop -->
+      <div class="gallery-item g1"><div class="gallery-item-text"><span class="icon">🕌</span></div><div class="gallery-item-label">DI Khan Fort</div></div>
+      <div class="gallery-item g2"><div class="gallery-item-text"><span class="icon">🏔️</span></div><div class="gallery-item-label">Swat Mountains</div></div>
+      <div class="gallery-item g3"><div class="gallery-item-text"><span class="icon">🌅</span></div><div class="gallery-item-label">Indus Sunset</div></div>
+      <div class="gallery-item g4"><div class="gallery-item-text"><span class="icon">🌿</span></div><div class="gallery-item-label">Kumrat Forest</div></div>
+      <div class="gallery-item g5"><div class="gallery-item-text"><span class="icon">🦅</span></div><div class="gallery-item-label">Chitral Peak</div></div>
+      <div class="gallery-item g6"><div class="gallery-item-text"><span class="icon">🏛️</span></div><div class="gallery-item-label">Peshawar Bazaar</div></div>
+      <div class="gallery-item g7"><div class="gallery-item-text"><span class="icon">💧</span></div><div class="gallery-item-label">Mahodand Lake</div></div>
+      <div class="gallery-item g8"><div class="gallery-item-text"><span class="icon">🌄</span></div><div class="gallery-item-label">Hindu Kush Dawn</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why">
+  <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
+    <div class="section-tag" style="justify-content: center;">Why Choose Us</div>
+    <h2 class="section-title">Travel Better with <span>RoamKPK</span></h2>
+    <p class="section-desc" style="margin: 0 auto;">We don't just show you places — we create memories that last a lifetime.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card fade-up">
+      <div class="why-icon">🧭</div>
+      <h3>Expert Local Guides</h3>
+      <p>Our guides are native KPK locals with deep cultural knowledge and fluency in Pashto, Urdu & English.</p>
+    </div>
+    <div class="why-card fade-up">
+      <div class="why-icon">🔒</div>
+      <h3>Safety First Always</h3>
+      <p>Every route is pre-scouted, every vehicle is verified, and every traveler is insured for a worry-free journey.</p>
+    </div>
+    <div class="why-card fade-up">
+      <div class="why-icon">💎</div>
+      <h3>Premium Experience</h3>
+      <p>Carefully selected hotels, authentic cuisine experiences, and exclusive access to off-the-beaten-path gems.</p>
+    </div>
+    <div class="why-card fade-up">
+      <div class="why-icon">📱</div>
+      <h3>24/7 WhatsApp Support</h3>
+      <p>Have a question at midnight? We're always available on WhatsApp to ensure your peace of mind throughout.</p>
+    </div>
+    <div class="why-card fade-up">
+      <div class="why-icon">🌿</div>
+      <h3>Eco-Conscious Travel</h3>
+      <p>We minimize environmental impact, support local communities, and follow Leave No Trace principles.</p>
+    </div>
+    <div class="why-card fade-up">
+      <div class="why-icon">✨</div>
+      <h3>Customizable Tours</h3>
+      <p>Every group is different. Tell us your dream trip and we'll tailor a perfect itinerary just for you.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="test-bg"></div>
+  <div class="test-header">
+    <div class="section-tag">Testimonials</div>
+    <h2 class="section-title">What Our Travelers Say</h2>
+    <p class="section-desc" style="color: rgba(255,255,255,0.6);">Real stories from real adventurers who explored KPK with us.</p>
+  </div>
+  <div class="test-grid">
+    <div class="test-card fade-up">
+      <div class="test-stars">★★★★★</div>
+      <p class="test-quote">"RoamKPK made our trip to Swat absolutely magical. Our guide Ahmed knew every hidden spot — places no tourist would ever find on their own. Best money I've ever spent on a trip."</p>
+      <div class="test-author">
+        <div class="test-avatar">AK</div>
+        <div>
+          <div class="test-name">Ahmad Karimi</div>
+          <div class="test-loc">Lahore, Pakistan</div>
+        </div>
+      </div>
+    </div>
+    <div class="test-card fade-up">
+      <div class="test-stars">★★★★★</div>
+      <p class="test-quote">"I'm a solo traveler and was nervous about KPK. RoamKPK took care of everything — safe transport, lovely guest houses, and the warmth of Pashtun hospitality. I'll be back!"</p>
+      <div class="test-author">
+        <div class="test-avatar">SN</div>
+        <div>
+          <div class="test-name">Sara Noor</div>
+          <div class="test-loc">Karachi, Pakistan</div>
+        </div>
+      </div>
+    </div>
+    <div class="test-card fade-up">
+      <div class="test-stars">★★★★★</div>
+      <p class="test-quote">"The Indus River expedition was unlike anything I've experienced. Waking up to that river sound, fresh chai, and mountains on every side — pure bliss. Highly recommend RoamKPK!"</p>
+      <div class="test-author">
+        <div class="test-avatar">MZ</div>
+        <div>
+          <div class="test-name">Muhammad Zubair</div>
+          <div class="test-loc">Islamabad, Pakistan</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <div class="section-tag">Get in Touch</div>
+    <h2 class="section-title">Plan Your <span>KPK Adventure</span></h2>
+  </div>
+  <div class="contact-grid">
+    <div class="fade-up">
+      <p class="section-desc">Ready to explore KPK? Fill out the form or reach us directly. We respond within a few hours — usually on WhatsApp!</p>
+      <div class="contact-info-cards">
+        <div class="contact-info-card">
+          <div class="ci-icon">📍</div>
+          <div>
+            <div class="ci-label">Location</div>
+            <div class="ci-value">Dera Ismail Khan, KPK, Pakistan</div>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="ci-icon">📞</div>
+          <div>
+            <div class="ci-label">Phone / WhatsApp</div>
+            <div class="ci-value">+92 300 000 0000</div>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="ci-icon">✉️</div>
+          <div>
+            <div class="ci-label">Email</div>
+            <div class="ci-value">hello@roamkpk.pk</div>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="ci-icon">🕐</div>
+          <div>
+            <div class="ci-label">Business Hours</div>
+            <div class="ci-value">Mon–Sat, 9:00 AM – 8:00 PM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="contact-form fade-up">
+      <h3>Book Your Tour</h3>
+
+      <!-- API Response Message Box -->
+      <div id="form-msg" style="display:none;padding:1rem 1.2rem;border-radius:4px;margin-bottom:1.2rem;font-size:0.9rem;font-weight:500;"></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input id="f-firstName" type="text" placeholder="Muhammad">
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input id="f-lastName" type="text" placeholder="Ali">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input id="f-email" type="email" placeholder="you@email.com">
+        </div>
+        <div class="form-group">
+          <label>Phone / WhatsApp</label>
+          <input id="f-phone" type="tel" placeholder="+92 300 000 0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Interested Tour</label>
+        <select id="f-tourId">
+          <option value="">Select a tour package</option>
+          <option value="1">DI Khan Heritage Trail (2 Days) – Rs 8,500</option>
+          <option value="2">Swat Valley & Mahodand Lake (5 Days) – Rs 22,000</option>
+          <option value="3">Chitral & Kalash Valley Trek (4 Days) – Rs 18,000</option>
+          <option value="4">Indus River Expedition (3 Days) – Rs 12,500</option>
+          <option value="5">Peshawar Old City & Khyber Pass (3 Days) – Rs 14,000</option>
+          <option value="6">Dir & Kumrat Valley Wilderness (7 Days) – Rs 28,000</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Travel Date</label>
+          <input id="f-travelDate" type="date">
+        </div>
+        <div class="form-group">
+          <label>Group Size</label>
+          <select id="f-groupSize">
+            <option value="2">1–2 people</option>
+            <option value="4">3–5 people</option>
+            <option value="8">6–10 people</option>
+            <option value="12">10+ people</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Message / Special Requests</label>
+        <textarea id="f-message" placeholder="Tell us about your dream trip, any accessibility needs, dietary preferences, or special requests..."></textarea>
+      </div>
+      <button id="submit-btn" class="btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:1rem;" onclick="submitForm()">
+        Send Booking Request &#8594;
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo">Roam<span>KPK</span></a>
+      <p>Your trusted local travel partner in Khyber Pakhtunkhwa. Proudly based in Dera Ismail Khan, serving travelers since 2016.</p>
+      <div class="footer-social">
+        <a class="social-btn" title="Facebook">f</a>
+        <a class="social-btn" title="Instagram">in</a>
+        <a class="social-btn" title="WhatsApp">W</a>
+        <a class="social-btn" title="YouTube">▶</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Tours</h4>
+      <ul>
+        <li><a href="#tours">DI Khan Heritage</a></li>
+        <li><a href="#tours">Swat Valley</a></li>
+        <li><a href="#tours">Chitral Trek</a></li>
+        <li><a href="#tours">Indus Expedition</a></li>
+        <li><a href="#tours">Kumrat Valley</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#why">Why RoamKPK</a></li>
+        <li><a href="#testimonials">Reviews</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Information</h4>
+      <ul>
+        <li><a href="#">Travel Tips</a></li>
+        <li><a href="#">Safety Guide</a></li>
+        <li><a href="#">Booking Policy</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2025 RoamKPK. All rights reserved. Made with ❤️ in Dera Ismail Khan.</p>
+    <p>Designed for <a href="#">RoamKPK Travel Services</a></p>
+  </div>
+</footer>
+
+<!-- WhatsApp Float Button -->
+<a href="https://wa.me/923000000000" class="wa-float" target="_blank" title="Chat on WhatsApp">💬</a>
+
+<script>
+  /* ── PAGE LOADER ── */
+  window.addEventListener('load', () => {
+    const fill = document.getElementById('loader-fill');
+    const loader = document.getElementById('page-loader');
+    if (fill) fill.style.width = '100%';
+    setTimeout(() => {
+      if (loader) { loader.style.opacity = '0'; loader.style.visibility = 'hidden'; }
+    }, 1800);
+  });
+
+  /* ── SCROLL PROGRESS BAR ── */
+  window.addEventListener('scroll', () => {
+    const bar = document.getElementById('scroll-progress');
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    if (bar) bar.style.transform = `scaleX(${pct})`;
+
+    // Navbar scroll
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+
+    // Back to top
+    const bt = document.getElementById('back-top');
+    if (bt) {
+      bt.style.opacity = window.scrollY > 400 ? '1' : '0';
+      bt.style.transform = window.scrollY > 400 ? 'translateY(0)' : 'translateY(10px)';
+    }
+  });
+
+  /* ── CUSTOM CURSOR ── */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    if (dot) { dot.style.left = mouseX + 'px'; dot.style.top = mouseY + 'px'; }
+  });
+
+  function animateRing() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    if (ring) { ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px'; }
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  document.querySelectorAll('a, button, .tour-card, .dest-card, .why-card, .filter-btn').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      if (dot) { dot.style.width = '12px'; dot.style.height = '12px'; dot.style.background = 'var(--gold-light)'; }
+      if (ring) { ring.style.width = '56px'; ring.style.height = '56px'; ring.style.borderColor = 'var(--gold)'; }
+    });
+    el.addEventListener('mouseleave', () => {
+      if (dot) { dot.style.width = '8px'; dot.style.height = '8px'; dot.style.background = 'var(--gold)'; }
+      if (ring) { ring.style.width = '36px'; ring.style.height = '36px'; ring.style.borderColor = 'rgba(201,168,76,0.6)'; }
+    });
+  });
+
+  // Hide cursor on touch devices
+  if ('ontouchstart' in window) {
+    if (dot) dot.style.display = 'none';
+    if (ring) ring.style.display = 'none';
+  }
+
+  /* ── MOBILE MENU ── */
+  function toggleMenu() {
+    const links = document.getElementById('navLinks');
+    links.classList.toggle('open');
+  }
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => document.getElementById('navLinks').classList.remove('open'));
+  });
+
+  /* ── SCROLL REVEAL (fade-up + reveal-left/right/scale) ── */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.fade-up, .reveal-left, .reveal-right, .reveal-scale').forEach(el => revealObserver.observe(el));
+
+  /* ── ANIMATED COUNTER ── */
+  function animateCounter(el) {
+    const target = parseInt(el.dataset.target);
+    const suffix = target >= 10 ? '+' : '+';
+    const duration = 1800;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current) + suffix;
+    }, 16);
+  }
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        counterObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.count-num').forEach(el => counterObserver.observe(el));
+
+  /* ── HERO WORD ANIMATION ── */
+  function animateHeroWords() {
+    const titleEl = document.querySelector('.hero-title');
+    if (!titleEl) return;
+    const lines = titleEl.innerHTML.split('\n');
+    titleEl.querySelectorAll('.word').forEach((w, i) => {
+      w.style.animationDelay = (i * 0.12 + 0.3) + 's';
+    });
+  }
+  animateHeroWords();
+
+  /* ── PARALLAX HERO GRID ── */
+  document.addEventListener('mousemove', e => {
+    const grid = document.querySelector('.hero-grid');
+    const pattern = document.querySelector('.hero-bg-pattern');
+    if (!grid) return;
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 20;
+    grid.style.transform = `translate(${x}px, ${y}px)`;
+    if (pattern) pattern.style.transform = `translate(${x * 0.5}px, ${y * 0.5}px)`;
+  });
+
+  /* ── TILT EFFECT ON TOUR CARDS ── */
+  document.querySelectorAll('.tilt-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `perspective(800px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg) translateY(-6px)`;
+      card.style.transition = 'transform 0.1s ease';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateY(0)';
+      card.style.transition = 'transform 0.5s ease';
+    });
+  });
+
+  /* ── RIPPLE EFFECT ON BUTTONS ── */
+  document.querySelectorAll('.btn-primary, .btn-outline, .filter-btn, .nav-cta').forEach(btn => {
+    btn.style.position = 'relative';
+    btn.style.overflow = 'hidden';
+    btn.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 2;
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      const ripple = document.createElement('span');
+      ripple.style.cssText = `position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);width:${size}px;height:${size}px;left:${x}px;top:${y}px;transform:scale(0);animation:ripple-go 0.6s linear;pointer-events:none;`;
+      this.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    });
+  });
+
+  /* ── SECTION DIVIDER EXPAND ON VISIBLE ── */
+  const dividerObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.width = '120px';
+        dividerObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.8 });
+  document.querySelectorAll('.section-divider').forEach(d => dividerObserver.observe(d));
+
+  /* ── HERO FLOATING PARTICLES ── */
+  function createParticle() {
+    const hero = document.getElementById('hero');
+    if (!hero) return;
+    const p = document.createElement('div');
+    const size = Math.random() * 6 + 3;
+    p.style.cssText = `position:absolute;border-radius:50%;background:rgba(201,168,76,0.12);width:${size}px;height:${size}px;left:${Math.random()*100}%;animation:particle-float ${Math.random()*8+6}s linear infinite;pointer-events:none;z-index:0;`;
+    hero.appendChild(p);
+    setTimeout(() => p.remove(), 14000);
+  }
+  setInterval(createParticle, 600);
+
+  /* ── TOUR FILTERS with smooth transition ── */
+  function filterTours(btn, cat) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tour-card').forEach(card => {
+      const show = cat === 'all' || card.dataset.cat === cat;
+      card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      if (show) {
+        card.style.display = '';
+        setTimeout(() => { card.style.opacity = '1'; card.style.transform = ''; }, 10);
+      } else {
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.95)';
+        setTimeout(() => { card.style.display = 'none'; }, 400);
+      }
+    });
+  }
+
+  /* ── DESTINATION CARD HOVER GLOW ── */
+  document.querySelectorAll('.dest-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.transition = 'transform 0.4s ease, box-shadow 0.4s ease';
+      card.style.boxShadow = '0 0 40px rgba(201,168,76,0.3)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.boxShadow = '';
+    });
+  });
+
+  /* ── TESTIMONIAL CARD ENTRANCE ── */
+  document.querySelectorAll('.test-card').forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = `opacity 0.6s ease ${i * 0.15}s, transform 0.6s ease ${i * 0.15}s`;
+  });
+  const testObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        testObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.test-card').forEach(c => testObserver.observe(c));
+
+  /* ── WHY CARD STAGGER ── */
+  document.querySelectorAll('.why-card').forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(25px)';
+    card.style.transition = `opacity 0.5s ease ${i * 0.1}s, transform 0.5s ease ${i * 0.1}s, box-shadow 0.3s, background 0.3s`;
+  });
+  const whyObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        whyObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.why-card').forEach(c => whyObserver.observe(c));
+
+  /* ── SMOOTH SCROLL ── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+
+  /* ── BACKEND API URL ── */
+  const API_URL = 'http://localhost:3000';
+
+  /* ── FORM SUBMIT — connects to server.js ── */
+  async function submitForm() {
+    const btn    = document.getElementById('submit-btn');
+    const msgBox = document.getElementById('form-msg');
+
+    // Read all form values
+    const firstName  = document.getElementById('f-firstName').value.trim();
+    const lastName   = document.getElementById('f-lastName').value.trim();
+    const email      = document.getElementById('f-email').value.trim();
+    const phone      = document.getElementById('f-phone').value.trim();
+    const tourId     = document.getElementById('f-tourId').value;
+    const travelDate = document.getElementById('f-travelDate').value;
+    const groupSize  = document.getElementById('f-groupSize').value;
+    const message    = document.getElementById('f-message').value.trim();
+
+    // Basic frontend check before calling API
+    if (!firstName || !lastName || !email || !phone || !tourId || !travelDate) {
+      showMsg('error', '⚠️ Please fill in all required fields before submitting.');
+      return;
+    }
+
+    // Show loading state on button
+    btn.textContent = '⏳ Sending to Server...';
+    btn.style.opacity = '0.7';
+    btn.disabled = true;
+
+    try {
+      // ── FETCH: POST request to backend API ──
+      const response = await fetch(`${API_URL}/api/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName, lastName, email, phone,
+          tourId:    parseInt(tourId),
+          groupSize: parseInt(groupSize),
+          travelDate, message
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 'success') {
+        // ✅ SUCCESS — 201 Created from server
+        showMsg('success',
+          `✅ Booking Confirmed! Booking ID: #${data.data.id} | 
+           Tour: ${data.data.tourName} | 
+           Total Price: Rs ${data.data.totalPrice.toLocaleString()} | 
+           We'll contact you on WhatsApp shortly! 🎉`
+        );
+        btn.textContent = '✓ Booking Submitted!';
+        btn.style.background = 'var(--forest)';
+        btn.style.color = '#fff';
+        btn.style.opacity = '1';
+        clearForm();
+      } else {
+        // ❌ VALIDATION ERROR — 400 Bad Request from server
+        const errorList = data.errors ? data.errors.join(' | ') : data.message;
+        showMsg('error', `❌ ${data.message}: ${errorList}`);
+        btn.textContent = 'Send Booking Request →';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+      }
+
+    } catch (err) {
+      // ❌ SERVER NOT RUNNING — network error
+      showMsg('error',
+        '🔴 Cannot connect to server. Make sure you ran <strong>node server.js</strong> in your terminal first!'
+      );
+      btn.textContent = 'Send Booking Request →';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
+  // Show a styled message box above the button
+  function showMsg(type, text) {
+    const box = document.getElementById('form-msg');
+    box.style.display = 'block';
+    box.innerHTML = text;
+    if (type === 'success') {
+      box.style.background = 'rgba(26,60,46,0.08)';
+      box.style.border = '1px solid rgba(26,60,46,0.3)';
+      box.style.color = 'var(--forest)';
+    } else {
+      box.style.background = 'rgba(200,50,50,0.08)';
+      box.style.border = '1px solid rgba(200,50,50,0.3)';
+      box.style.color = '#c83232';
+    }
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Clear all form fields after successful submission
+  function clearForm() {
+    ['f-firstName','f-lastName','f-email','f-phone',
+     'f-tourId','f-travelDate','f-message'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }
+
+  /* ── RIPPLE KEYFRAME INJECTION ── */
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes ripple-go { to { transform: scale(4); opacity: 0; } }
+    @keyframes particle-float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+    @keyframes loader-pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.7; transform:scale(0.97); }
+    }
+  `;
+  document.head.appendChild(style);
+
+  /* ── MAGNETIC BUTTON EFFECT ── */
+  document.querySelectorAll('.btn-primary').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      btn.style.transform = `translate(${x * 0.18}px, ${y * 0.18}px) translateY(-2px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+      btn.style.transition = 'transform 0.5s ease, box-shadow 0.3s';
+    });
+  });
+
+  /* ── CONTACT FORM INPUT FOCUS ANIMATION ── */
+  document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(input => {
+    const label = input.previousElementSibling;
+    input.addEventListener('focus', () => {
+      if (label) { label.style.color = 'var(--gold)'; label.style.transition = 'color 0.3s'; }
+    });
+    input.addEventListener('blur', () => {
+      if (label) label.style.color = '';
+    });
+  });
+
+  /* ── GALLERY PAUSE ON HOVER ── */
+  const galleryStrip = document.querySelector('.gallery-strip');
+  if (galleryStrip) {
+    galleryStrip.addEventListener('mouseenter', () => galleryStrip.style.animationPlayState = 'paused');
+    galleryStrip.addEventListener('mouseleave', () => galleryStrip.style.animationPlayState = 'running');
+  }
+</script>
+</body>
+</html>
